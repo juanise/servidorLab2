@@ -5,11 +5,11 @@ import java.util.Date;
 //JavaBean Tarea
 public class Tarea {
 	private int id;
-	private String nombre;
-	private int proyecto;
-	private Date fechaTope;
-	private Date fechaFinalizacion;
-	private int programador;
+	private String nombreTarea;
+	private int proyectoTarea;
+	private Date fechaTopeTarea;
+	private Date fechaFinalizacionTarea;
+	private int programadorTarea;
 
 	public Tarea() {
 	}
@@ -18,47 +18,48 @@ public class Tarea {
 		this.id = id;
 	}
 
-	public void setNombre(String n) {
-		nombre = n;
+	public String getNombreTarea() {
+		return nombreTarea;
 	}
 
-	public void setProyecto(int p) {
-		proyecto = p;
+	public void setNombreTarea(String nombreTarea) {
+		this.nombreTarea = nombreTarea;
 	}
 
-	public void setFechaTope(Date d) {
-		fechaTope = d;
+	public int getProyectoTarea() {
+		return proyectoTarea;
 	}
 
-	public void setFechaFinalizacion(Date d) {
-		fechaFinalizacion = d;
+	public void setProyectoTarea(int proyectoTarea) {
+		this.proyectoTarea = proyectoTarea;
 	}
 
-	public void setProgramador(int p) {
-		programador = p;
+	public Date getFechaTopeTarea() {
+		return fechaTopeTarea;
+	}
+
+	public void setFechaTopeTarea(Date fechaTopeTarea) {
+		this.fechaTopeTarea = fechaTopeTarea;
+	}
+
+	public Date getFechaFinalizacionTarea() {
+		return fechaFinalizacionTarea;
+	}
+
+	public void setFechaFinalizacionTarea(Date fechaFinalizacionTarea) {
+		this.fechaFinalizacionTarea = fechaFinalizacionTarea;
+	}
+
+	public int getProgramadorTarea() {
+		return programadorTarea;
+	}
+
+	public void setProgramadorTarea(int programadorTarea) {
+		this.programadorTarea = programadorTarea;
 	}
 
 	public int getId() {
 		return id;
 	}
 
-	public String getNombre() {
-		return nombre;
-	}
-
-	public int getProyecto() {
-		return proyecto;
-	}
-
-	public Date getFechaTope() {
-		return fechaTope;
-	}
-
-	public Date getFechaFinalizacion() {
-		return fechaFinalizacion;
-	}
-
-	public int getProgramador() {
-		return programador;
-	}
 }

@@ -7,6 +7,8 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 public class AccesoDatos {
 	private PreparedStatement getTareasUsuario;
@@ -14,6 +16,7 @@ public class AccesoDatos {
 	private PreparedStatement setFechaFinalizacion;
 	private PreparedStatement creaProyecto;
 	private PreparedStatement creaTarea;
+	private PreparedStatement getProgramadores;
 	private Statement st;
 	private SimpleDateFormat formatter;
 
@@ -21,7 +24,7 @@ public class AccesoDatos {
 		getTareasUsuario = c
 				.prepareStatement("select * from tareas where user_id=?");
 		setFechaFinalizacion = c
-				.prepareStatement("update tareas set fechafinalizacion=? where tr_id=?");
+				.prepareStatement("update tareas set fechafinalizacion=? where ? LIKE concat(';%', concat(ta_id, '%;'))");
 		String pattern = "yyyy-MM-dd";
 		formatter = new SimpleDateFormat(pattern);
 		st = c.createStatement();
@@ -31,7 +34,24 @@ public class AccesoDatos {
 				.prepareStatement("insert into tareas (nombre,pr_id,fechalimite,user_id) values (?,?,?,?)");
 		
 		getTareasProyecto = c.prepareStatement("select * from tareas where pr_id=?");
+		getProgramadores = c.prepareStatement("select u.user_id, u.username from users u "
+				+ "join roles r on u.username = r.username and r.role = ? ");
 	
+	}
+	
+	public List<Programador> getAllProgramadores() throws Exception{
+		getProgramadores.setString(1, Roles.PROGRAMADOR.getNombreRol());
+		final ResultSet rs = getProgramadores.executeQuery();
+		final List<Programador> programadoresList = new ArrayList<>();
+		rs.beforeFirst();
+		while (rs.next()) {
+			final Programador pro = new Programador();
+			pro.setUserId(rs.getInt(1));
+			pro.setNombre(rs.getString(2));
+			programadoresList.add(pro);
+		}
+		rs.close();
+		return programadoresList;
 	}
 
 	public ArrayList<Tarea> getAllTareas(int proyecto) throws Exception {
@@ -42,11 +62,11 @@ public class AccesoDatos {
 		while (rs.next()) {
 			Tarea t = new Tarea();
 			t.setId(rs.getInt(1));
-			t.setNombre(rs.getString(2));
-			t.setProyecto(rs.getInt(3));
-			t.setFechaTope(rs.getDate(4));
-			t.setProgramador(rs.getInt(5));
-			t.setFechaFinalizacion(rs.getDate(6));
+			t.setNombreTarea(rs.getString(2));
+			t.setProyectoTarea(rs.getInt(3));
+			t.setFechaTopeTarea(rs.getDate(4));
+			t.setProgramadorTarea(rs.getInt(5));
+			t.setFechaFinalizacionTarea(rs.getDate(6));
 			tareas.add(t);
 		}
 		rs.close();
@@ -75,22 +95,23 @@ public class AccesoDatos {
 		while (rs.next()) {
 			Tarea t = new Tarea();
 			t.setId(rs.getInt(1));
-			t.setNombre(rs.getString(2));
-			t.setProyecto(rs.getInt(3));
-			t.setFechaTope(rs.getDate(4));
-			t.setProgramador(rs.getInt(5));
-			t.setFechaFinalizacion(rs.getDate(6));
+			t.setNombreTarea(rs.getString(2));
+			t.setProyectoTarea(rs.getInt(3));
+			t.setFechaTopeTarea(rs.getDate(4));
+			t.setProgramadorTarea(rs.getInt(5));
+			t.setFechaFinalizacionTarea(rs.getDate(6));
 			tareas.add(t);
 		}
 		rs.close();
 		return tareas;
 	}
 
-	public void setFechaFinalizacion(int year, int mes, int dia, int tarea)
+	public void setFechaFinalizacion(Date fechaFinalizacion, String... tareasList)
 			throws Exception {
-		String finalizacion = getDate(year, mes, dia);
+		final String tareas = UtilController.semicolonFormat(tareasList);
+		String finalizacion = UtilController.getFechaYYYY_MM_DD(fechaFinalizacion);
 		setFechaFinalizacion.setString(1, finalizacion);
-		setFechaFinalizacion.setInt(2, tarea);
+		setFechaFinalizacion.setString(2, tareas);
 
 		setFechaFinalizacion.executeUpdate();
 	}
@@ -101,9 +122,8 @@ public class AccesoDatos {
 		creaProyecto.executeUpdate();
 	}
 
-	public void creaTarea(String nombre, int proyecto, int usuario, int year,
-			int mes, int dia) throws Exception {
-		String limite = getDate(year, mes, dia);
+	public void creaTarea(String nombre, int proyecto, int usuario, Date fechaTope) throws Exception {
+		String limite = UtilController.getFechaYYYY_MM_DD(fechaTope);
 		creaTarea.setString(1, nombre);
 		creaTarea.setInt(2, proyecto);
 		creaTarea.setString(3, limite);
@@ -120,16 +140,19 @@ public class AccesoDatos {
 	}
 
 	public void closeAll() throws Exception {
-		if (st != null)
-			st.close();
-		if (creaTarea != null)
-			creaTarea.close();
-		if (creaProyecto != null)
-			creaProyecto.close();
-		if (getTareasUsuario != null)
-			getTareasUsuario.close();
-		if (setFechaFinalizacion != null)
-			setFechaFinalizacion.close();
+		close(st);
+		close(creaTarea);
+		close(creaProyecto);
+		close(getTareasUsuario);
+		close(setFechaFinalizacion);
+		close(getTareasProyecto);
+		close(getProgramadores);
+	}
+	
+	private void close(AutoCloseable autoCloseable) throws Exception{
+		if (autoCloseable != null) {
+			autoCloseable.close();
+		}
 	}
 
 }
